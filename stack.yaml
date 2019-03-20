@@ -1,0 +1,15 @@
+resolver: lts-13.10
+
+packages:
+  - .
+
+extra-deps:
+  - git: 'https://github.com/llvm-hs/llvm-hs.git'
+    commit: 48e7d9b3bad571e479753cd091b25b513bf91f23
+    subdirs:
+      - llvm-hs
+      - llvm-hs-pure
+nix:
+  enable: true
+  shell-file: stack-shell.nix
+  packages: []

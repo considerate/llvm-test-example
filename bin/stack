@@ -1,0 +1,58 @@
+#!/usr/bin/env nix-shell
+#! nix-shell -i bash --pure ../stack-shell.nix
+#
+# A stack wrapper script that first loads the nix dependencies
+#
+# Usage: just like stack
+set -euo pipefail
+
+top=$(cd "$(dirname "$0")" && pwd)
+
+# set nixpkgs to avoid warnings
+export NIX_PATH=nixpkgs=${top}/nix
+STACK_ARGS=(${STACK_IN_NIX_EXTRA_ARGS[@]})
+STACK_FLAGS=()
+FLAGS=()
+
+while test $# -gt 0; do
+    case "$1" in
+    --*=*)
+      STACK_FLAGS+=("$1");
+      shift;
+      ;;
+    -*)
+      STACK_FLAGS+=("$1" "$2");
+      shift;
+      shift;
+      ;;
+    build)
+      shift;
+      ARGS=("${STACK_FLAGS[@]}" "build" "${FLAGS[@]}" "${STACK_ARGS[@]}" "$@" );
+      break;
+      ;;
+    ghci)
+      shift;
+      ARGS=("${STACK_FLAGS[@]}" "ghci" "${FLAGS[@]}" "${STACK_ARGS[@]}" "$@" );
+      break;
+      ;;
+    repl)
+      shift;
+      ARGS=("${STACK_FLAGS[@]}" "repl" "${FLAGS[@]}" "${STACK_ARGS[@]}" "$@" );
+      break;
+      ;;
+    test)
+      shift;
+      ARGS=("${STACK_FLAGS[@]}" "test" "${FLAGS[@]}" "${STACK_ARGS[@]}" "$@" );
+      break;
+      ;;
+    *)
+      subcommand="$1";
+      shift;
+      ARGS=("${STACK_FLAGS[@]}" "$subcommand" "$@" );
+      break;
+      ;;
+    esac
+done
+
+# and finally forward everything to stack
+exec stack --no-nix --system-ghc --no-install-ghc "${ARGS[@]}"
